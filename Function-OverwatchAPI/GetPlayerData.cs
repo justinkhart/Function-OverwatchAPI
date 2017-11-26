@@ -17,7 +17,7 @@ namespace OverwatchAPI
         [FunctionName("GetPlayerData")]
         public static async Task<HttpResponseMessage> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequestMessage req, TraceWriter log)
         {
-            log.Info("C# HTTP trigger function processed a request.");
+            
 
             // parse query parameter
             string battleTag = req.GetQueryNameValuePairs()
@@ -34,6 +34,7 @@ namespace OverwatchAPI
             if (battleTag == null)
             {
                 var errorContent = CreateErrorContent("Please include a BattleTag in the query string.");
+                log.Error("Invalid Request Received - No BattleTag");
                 return new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
                     Content = errorContent
@@ -53,6 +54,8 @@ namespace OverwatchAPI
 
                 var json = JsonConvert.SerializeObject(op, Formatting.Indented);
 
+                log.Info($"BattleTag {battleTag} was scraped successfully");
+
                 return new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -61,6 +64,7 @@ namespace OverwatchAPI
             catch (Exception e)
             {
                 var errorContent = CreateErrorContent("Invalid BattleTag - Please make sure it is correct. If it is correct, this is probably broken for a different reason, find someone who can help. ");
+                log.Error($"Invalid BattleTag - {battleTag} was not scraped");
                 return new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
                     Content = errorContent
